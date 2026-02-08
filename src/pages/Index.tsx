@@ -53,7 +53,7 @@ const Index = () => {
         />
 
         {/* Turn Panel - overlaid on board */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 lg:w-72 flex-shrink-0 z-10">
+        <div className="absolute left-1/2 transform -translate-x-1/2 lg:w-96 flex-shrink-0 z-10">
           <TurnPanel
             state={state}
             stocks={stocks}
@@ -71,8 +71,8 @@ const Index = () => {
       </div>
 
       {/* Right: Game log */}
-      <div className="lg:w-72 flex-shrink-0 order-3">
-        <div className="bg-card rounded-lg border border-border p-3 mt-3 max-h-80 overflow-y-auto">
+      <div className="lg:w-60 flex-shrink-0 order-3">
+        <div className="bg-card rounded-lg border border-border p-3 mt-3 max-h-120 overflow-y-auto">
           <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Ticker</h3>
           {state.gameLog.slice(0, 15).map((log, i) => (
             <p key={i} className={`text-xs py-0.5 ${i === 0 ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>                {log}
