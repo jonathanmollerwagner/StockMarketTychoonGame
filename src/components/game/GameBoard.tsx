@@ -7,15 +7,16 @@ interface GameBoardProps {
   currentPlayerIndex: number;
 }
 
-const SIDE = 8; // tiles per side
+const SIDE = 8; // tiles per side (not including shared corners)
+const GRID_SIZE = SIDE + 1; // 9x9 grid to handle shared corners
 const TOTAL = SIDE * 4; // 32 tiles
 
 function getTilePosition(index: number, boardSize: number): { row: number; col: number } {
   // Square board: top (0-7), right (8-15), bottom (16-23), left (24-31)
   if (index < SIDE) return { row: 0, col: index }; // top, left to right
-  if (index < SIDE * 2) return { row: index - SIDE, col: SIDE - 1 }; // right, top to bottom
-  if (index < SIDE * 3) return { row: SIDE - 1, col: SIDE - 1 - (index - SIDE * 2) }; // bottom, right to left
-  return { row: SIDE - 1 - (index - SIDE * 3), col: 0 }; // left, bottom to top
+  if (index < SIDE * 2) return { row: index - SIDE, col: GRID_SIZE - 1 }; // right, top to bottom
+  if (index < SIDE * 3) return { row: GRID_SIZE - 1, col: GRID_SIZE - 1 - (index - SIDE * 2) }; // bottom, right to left
+  return { row: GRID_SIZE - 1 - (index - SIDE * 3), col: 0 }; // left, bottom to top
 }
 
 function getTileLabel(tile: BoardTile, stocks: StockDefinition[]): { label: string; icon: string; category?: string } {
@@ -59,15 +60,15 @@ function getTileBgClass(tile: BoardTile, stocks: StockDefinition[]): string {
 
 export default function GameBoard({ tiles, players, stocks, currentPlayerIndex }: GameBoardProps) {
   // Build a grid
-  const grid: (number | null)[][] = Array.from({ length: SIDE }, () => Array(SIDE).fill(null));
+  const grid: (number | null)[][] = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(null));
   tiles.forEach((_, i) => {
     const { row, col } = getTilePosition(i, TOTAL);
     grid[row][col] = i;
   });
 
   return (
-    <div className="w-full aspect-square max-w-[600px] mx-auto">
-      <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${SIDE}, 1fr)`, gridTemplateRows: `repeat(${SIDE}, 1fr)` }}>
+    <div className="w-full aspect-square max-w-[800px] mx-auto">
+      <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`, gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)` }}>
         {grid.flat().map((tileIdx, flatIdx) => {
           if (tileIdx === null) {
             // Center area - empty
@@ -85,8 +86,8 @@ export default function GameBoard({ tiles, players, stocks, currentPlayerIndex }
                 players[currentPlayerIndex]?.position === tileIdx ? 'ring-2 ring-primary animate-pulse-glow' : ''
               }`}
             >
-              <span className="text-sm leading-none">{icon}</span>
-              <span className="text-[7px] leading-tight text-center font-semibold text-foreground/80 line-clamp-2 mt-0.5">
+              <span className="text-m leading-none">{icon}</span>
+              <span className="text-[12px] leading-tight text-center font-semibold text-foreground/80 line-clamp-2 mt-0.5">
                 {label}
               </span>
               {/* Player tokens */}
