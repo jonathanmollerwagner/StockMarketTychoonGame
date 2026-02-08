@@ -92,4 +92,5 @@ export interface GameState {
   currentTile: BoardTile | null;
   stockRollResults: StockRollResult[];
   gameLog: string[];
+  phaseBeforeStockAction: GamePhase | null;
 }

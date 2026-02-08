@@ -41,6 +41,7 @@ export function useGameState() {
     currentTile: null,
     stockRollResults: [],
     gameLog: [],
+    phaseBeforeStockAction: null,
   });
 
   const addLog = useCallback((msg: string) => {
@@ -68,6 +69,7 @@ export function useGameState() {
       currentTile: null,
       stockRollResults: [],
       gameLog: [`Game started! Year ${START_YEAR}. ${players[0].name}'s turn.`],
+      phaseBeforeStockAction: null,
     });
   }, []);
 
@@ -294,6 +296,16 @@ export function useGameState() {
 
   const skipStockAction = useCallback(() => {
     setState(prev => {
+      // If we came from HUD (phaseBeforeStockAction is set), restore that phase
+      if (prev.phaseBeforeStockAction) {
+        return {
+          ...prev,
+          phase: prev.phaseBeforeStockAction,
+          phaseBeforeStockAction: null,
+          currentTile: null,
+        };
+      }
+      // Otherwise, use normal flow (stock_valuation or turn_end)
       const hasStocks = prev.players[prev.currentPlayerIndex].stocks.length > 0;
       return { ...prev, phase: hasStocks ? 'stock_valuation' : 'turn_end' };
     });
@@ -386,6 +398,7 @@ export function useGameState() {
       ...prev,
       phase: 'stock_action',
       currentTile: stockId ? { type: 'stock', stockId } : null,
+      phaseBeforeStockAction: stockId ? prev.phase : null,
     }));
   }, []);
 
