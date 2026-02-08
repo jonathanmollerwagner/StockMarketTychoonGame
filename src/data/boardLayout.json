@@ -1,0 +1,37 @@
+[
+  { "type": "stock", "stockId": "standard_oil" },
+  { "type": "blank" },
+  { "type": "chance" },
+  { "type": "stock", "stockId": "steel_works" },
+  { "type": "blank" },
+  { "type": "stock", "stockId": "ibm_computing" },
+  { "type": "event" },
+  { "type": "stock", "stockId": "retail_giant" },
+
+  { "type": "stock", "stockId": "coal_mining_co" },
+  { "type": "chance" },
+  { "type": "stock", "stockId": "auto_motors" },
+  { "type": "blank" },
+  { "type": "stock", "stockId": "telecom" },
+  { "type": "event" },
+  { "type": "stock", "stockId": "luxury_brands" },
+  { "type": "blank" },
+
+  { "type": "stock", "stockId": "nuclear_power" },
+  { "type": "blank" },
+  { "type": "stock", "stockId": "aerospace" },
+  { "type": "chance" },
+  { "type": "stock", "stockId": "software_inc" },
+  { "type": "stock", "stockId": "food_beverage" },
+  { "type": "event" },
+  { "type": "blank" },
+
+  { "type": "stock", "stockId": "solar_energy" },
+  { "type": "event" },
+  { "type": "stock", "stockId": "shipping" },
+  { "type": "blank" },
+  { "type": "stock", "stockId": "chip_maker" },
+  { "type": "chance" },
+  { "type": "stock", "stockId": "pharma" },
+  { "type": "blank" }
+]

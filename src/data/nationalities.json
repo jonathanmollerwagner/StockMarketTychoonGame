@@ -1,0 +1,66 @@
+[
+  {
+    "id": "usa",
+    "name": "United States",
+    "flag": "🇺🇸",
+    "bonus": { "category": "tech", "percentage": 10 },
+    "weakness": { "category": "industry", "eventTag": "trade_war", "extraPenalty": 5 },
+    "description": "Silicon Valley dominance boosts tech stocks. Vulnerable to trade wars affecting domestic industry."
+  },
+  {
+    "id": "norway",
+    "name": "Norway",
+    "flag": "🇳🇴",
+    "bonus": { "category": "energy", "percentage": 10 },
+    "weakness": { "category": "energy", "eventTag": "oil_crash", "extraPenalty": 10 },
+    "description": "North Sea oil wealth boosts energy stocks. Highly vulnerable to oil price crashes."
+  },
+  {
+    "id": "japan",
+    "name": "Japan",
+    "flag": "🇯🇵",
+    "bonus": { "category": "industry", "percentage": 10 },
+    "weakness": { "category": "consumption", "eventTag": "recession", "extraPenalty": 5 },
+    "description": "Manufacturing powerhouse boosts industry stocks. Vulnerable to recessions hitting consumer spending."
+  },
+  {
+    "id": "uk",
+    "name": "United Kingdom",
+    "flag": "🇬🇧",
+    "bonus": { "category": "consumption", "percentage": 5 },
+    "weakness": { "category": "energy", "eventTag": "oil_crash", "extraPenalty": 5 },
+    "description": "Strong consumer market boosts consumption. Moderate vulnerability to energy crises."
+  },
+  {
+    "id": "germany",
+    "name": "Germany",
+    "flag": "🇩🇪",
+    "bonus": { "category": "industry", "percentage": 8 },
+    "weakness": { "category": "tech", "eventTag": "regulation", "extraPenalty": 5 },
+    "description": "Engineering excellence boosts industry. Strict regulations can hamper tech growth."
+  },
+  {
+    "id": "china",
+    "name": "China",
+    "flag": "🇨🇳",
+    "bonus": { "category": "industry", "percentage": 10 },
+    "weakness": { "category": "tech", "eventTag": "trade_war", "extraPenalty": 8 },
+    "description": "Manufacturing giant boosts industry. Trade wars severely impact tech exports."
+  },
+  {
+    "id": "saudi",
+    "name": "Saudi Arabia",
+    "flag": "🇸🇦",
+    "bonus": { "category": "energy", "percentage": 12 },
+    "weakness": { "category": "tech", "eventTag": "innovation", "extraPenalty": 5 },
+    "description": "Oil kingdom gives massive energy bonus. Slow tech adoption is a weakness."
+  },
+  {
+    "id": "brazil",
+    "name": "Brazil",
+    "flag": "🇧🇷",
+    "bonus": { "category": "consumption", "percentage": 8 },
+    "weakness": { "category": "industry", "eventTag": "recession", "extraPenalty": 7 },
+    "description": "Growing consumer class boosts consumption. Industrial sector vulnerable to recessions."
+  }
+]

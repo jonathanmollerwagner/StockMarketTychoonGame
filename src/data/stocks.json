@@ -1,0 +1,18 @@
+[
+  { "id": "standard_oil", "name": "Standard Oil", "category": "energy", "price": 500, "neutralRoll": 9, "rateOfChange": 0.8, "description": "The original oil giant. Steady returns from black gold." },
+  { "id": "coal_mining_co", "name": "Coal Mining Co", "category": "energy", "price": 200, "neutralRoll": 11, "rateOfChange": 0.5, "description": "Cheap entry, but coal's future is uncertain." },
+  { "id": "nuclear_power", "name": "Nuclear Power Inc", "category": "energy", "price": 600, "neutralRoll": 10, "rateOfChange": 1.0, "description": "High risk, high reward atomic energy." },
+  { "id": "solar_energy", "name": "Solar Dynamics", "category": "energy", "price": 400, "neutralRoll": 8, "rateOfChange": 0.7, "description": "The future of energy. Growing fast." },
+  { "id": "steel_works", "name": "United Steel Works", "category": "industry", "price": 350, "neutralRoll": 10, "rateOfChange": 0.5, "description": "Backbone of infrastructure. Steady and reliable." },
+  { "id": "auto_motors", "name": "Continental Motors", "category": "industry", "price": 450, "neutralRoll": 9, "rateOfChange": 0.7, "description": "Cars drive the economy forward." },
+  { "id": "aerospace", "name": "Skyward Aerospace", "category": "industry", "price": 700, "neutralRoll": 10, "rateOfChange": 0.9, "description": "Reaching for the stars. Defense contracts guarantee stability." },
+  { "id": "shipping", "name": "Global Shipping Ltd", "category": "industry", "price": 300, "neutralRoll": 10, "rateOfChange": 0.4, "description": "World trade depends on shipping. Low volatility." },
+  { "id": "ibm_computing", "name": "Computing Corp", "category": "tech", "price": 500, "neutralRoll": 9, "rateOfChange": 0.8, "description": "The dawn of the digital age." },
+  { "id": "telecom", "name": "National Telecom", "category": "tech", "price": 350, "neutralRoll": 10, "rateOfChange": 0.5, "description": "Connecting the world, one line at a time." },
+  { "id": "software_inc", "name": "Software Systems Inc", "category": "tech", "price": 600, "neutralRoll": 8, "rateOfChange": 1.0, "description": "Code is the new gold. Volatile but explosive growth." },
+  { "id": "chip_maker", "name": "Silicon Chipworks", "category": "tech", "price": 550, "neutralRoll": 9, "rateOfChange": 0.9, "description": "Semiconductors power everything. Cyclical but essential." },
+  { "id": "retail_giant", "name": "MegaMart Retail", "category": "consumption", "price": 250, "neutralRoll": 10, "rateOfChange": 0.3, "description": "Everyone needs groceries. Rock-solid stability." },
+  { "id": "luxury_brands", "name": "Prestige Luxury Group", "category": "consumption", "price": 500, "neutralRoll": 10, "rateOfChange": 0.7, "description": "When the rich get richer, luxury thrives." },
+  { "id": "food_beverage", "name": "Global Foods & Bev", "category": "consumption", "price": 300, "neutralRoll": 10, "rateOfChange": 0.3, "description": "Recession-proof. People always eat and drink." },
+  { "id": "pharma", "name": "PharmaCure Labs", "category": "consumption", "price": 450, "neutralRoll": 9, "rateOfChange": 0.6, "description": "Health is wealth. Aging populations drive demand." }
+]

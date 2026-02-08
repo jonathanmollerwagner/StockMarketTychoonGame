@@ -1,0 +1,17 @@
+[
+  { "id": "e1", "title": "Oil Boom!", "description": "New oil fields discovered. Energy stocks surge worldwide!", "tags": ["oil_boom"], "impact": { "category": "energy", "modifier": 15 } },
+  { "id": "e2", "title": "Oil Price Crash", "description": "OPEC floods the market. Oil prices plummet!", "tags": ["oil_crash"], "impact": { "category": "energy", "modifier": -20 } },
+  { "id": "e3", "title": "Tech Revolution", "description": "A breakthrough invention transforms the tech industry!", "tags": ["innovation"], "impact": { "category": "tech", "modifier": 15 } },
+  { "id": "e4", "title": "Global Recession", "description": "Markets crash worldwide. All sectors feel the pain.", "tags": ["recession"], "impact": { "category": "all", "modifier": -10 } },
+  { "id": "e5", "title": "Industrial Boom", "description": "Infrastructure spending drives industrial growth!", "tags": ["boom"], "impact": { "category": "industry", "modifier": 12 } },
+  { "id": "e6", "title": "Consumer Confidence Soars", "description": "People are spending! Retail and consumption stocks rise.", "tags": ["consumer_boom"], "impact": { "category": "consumption", "modifier": 10 } },
+  { "id": "e7", "title": "Trade War Escalates", "description": "Tariffs and restrictions hit international trade hard.", "tags": ["trade_war"], "impact": { "category": "industry", "modifier": -15 } },
+  { "id": "e8", "title": "New Regulations", "description": "Governments impose strict regulations on businesses.", "tags": ["regulation"], "impact": { "category": "tech", "modifier": -10 } },
+  { "id": "e9", "title": "Bull Market", "description": "Investor optimism pushes all stocks higher!", "tags": ["bull"], "impact": { "category": "all", "modifier": 8 } },
+  { "id": "e10", "title": "Energy Crisis", "description": "Supply shortages cause energy prices to spike.", "tags": ["oil_crash"], "impact": { "category": "energy", "modifier": -12 } },
+  { "id": "e11", "title": "Green Energy Push", "description": "Governments invest heavily in renewable energy.", "tags": ["innovation"], "impact": { "category": "energy", "modifier": 10 } },
+  { "id": "e12", "title": "Pandemic Hits", "description": "A global health crisis disrupts all markets.", "tags": ["recession"], "impact": { "category": "all", "modifier": -15 } },
+  { "id": "e13", "title": "Space Race", "description": "Nations compete in space exploration, boosting aerospace!", "tags": ["boom"], "impact": { "category": "industry", "modifier": 10 } },
+  { "id": "e14", "title": "Dot-Com Bubble Bursts", "description": "Overvalued tech companies collapse!", "tags": ["regulation"], "impact": { "category": "tech", "modifier": -20 } },
+  { "id": "e15", "title": "Gold Rush", "description": "Commodity prices rise. Old economy thrives!", "tags": ["boom"], "impact": { "category": "energy", "modifier": 8 } }
+]

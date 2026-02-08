@@ -1,0 +1,14 @@
+[
+  { "id": "c1", "title": "Insider Trading Tip", "description": "You receive a hot tip! One of your stocks gets a 20% boost.", "effect": "boost_random_stock", "value": 20 },
+  { "id": "c2", "title": "Tax Audit", "description": "The taxman cometh. Pay $200 in fines.", "effect": "lose_cash", "value": 200 },
+  { "id": "c3", "title": "Dividend Payout", "description": "Your investments pay off! Collect $300.", "effect": "gain_cash", "value": 300 },
+  { "id": "c4", "title": "Market Manipulation", "description": "Caught in a scheme! Pay $500 fine.", "effect": "lose_cash", "value": 500 },
+  { "id": "c5", "title": "Windfall Inheritance", "description": "A distant relative leaves you $400!", "effect": "gain_cash", "value": 400 },
+  { "id": "c6", "title": "Stock Scandal", "description": "One of your stocks is caught in a scandal. Loses 25% value.", "effect": "hurt_random_stock", "value": 25 },
+  { "id": "c7", "title": "Government Contract", "description": "You land a lucrative deal! Gain $600.", "effect": "gain_cash", "value": 600 },
+  { "id": "c8", "title": "Lawsuit", "description": "You're sued for malpractice. Pay $350.", "effect": "lose_cash", "value": 350 },
+  { "id": "c9", "title": "Brilliant Analyst Hire", "description": "Your new analyst boosts portfolio! All stocks gain 5%.", "effect": "boost_all_stocks", "value": 5 },
+  { "id": "c10", "title": "Currency Devaluation", "description": "Your home currency drops. Lose 10% on all stocks.", "effect": "hurt_all_stocks", "value": 10 },
+  { "id": "c11", "title": "IPO Success", "description": "An IPO you invested in explodes! Gain $500.", "effect": "gain_cash", "value": 500 },
+  { "id": "c12", "title": "Office Fire", "description": "Your office burns down. Pay $250 for repairs.", "effect": "lose_cash", "value": 250 }
+]
