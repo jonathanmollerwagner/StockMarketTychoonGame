@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from 'react';
 import type { GameState, StockDefinition } from '@/types/game';
 
 interface TurnPanelProps {
@@ -20,6 +21,19 @@ export default function TurnPanel({
 }: TurnPanelProps) {
   const player = state.players[state.currentPlayerIndex];
   if (!player) return null;
+
+  const [traded, setTraded] = useState(false);
+  const [selectedStockId, setSelectedStockId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (state.phase === 'stock_action') {
+      setTraded(false);
+      // default selected stock to first owned or current tile stock
+      const tileStock = state.currentTile?.stockId || null;
+      if (tileStock) setSelectedStockId(tileStock);
+      else setSelectedStockId(player.stocks.length > 0 ? player.stocks[0].stockId : null);
+    }
+  }, [state.phase, state.currentTile?.stockId]);
 
   return (
     <div className="bg-card rounded-lg border border-border p-4 animate-fade-in-up">
@@ -89,54 +103,128 @@ export default function TurnPanel({
       )}
 
       {/* Stock action */}
-      {state.phase === 'stock_action' && state.currentTile?.stockId && (() => {
-        const stockDef = stocks.find(s => s.id === state.currentTile!.stockId);
-        if (!stockDef) return null;
-        const owned = player.stocks.find(s => s.stockId === stockDef.id);
-        const canBuy = player.cash >= stockDef.price;
+      {state.phase === 'stock_action' && (() => {
+        const tileStockId = state.currentTile?.stockId || null;
+        // If standing on a stock tile, prefer that stock's UI
+        if (tileStockId) {
+          const stockDef = stocks.find(s => s.id === tileStockId);
+          if (!stockDef) return null;
+          const owned = player.stocks.find(s => s.stockId === stockDef.id);
+          const canBuy = player.cash >= stockDef.price;
+
+          return (
+            <div>
+              <div className="text-center mb-3">
+                <span className={`badge-${stockDef.category} px-2 py-0.5 rounded text-xs inline-block mb-1`}>
+                  {stockDef.category.toUpperCase()}
+                </span>
+                <h3 className="font-display text-lg font-bold">{stockDef.name}</h3>
+                <p className="text-xs text-muted-foreground">{stockDef.description}</p>
+              </div>
+              <div className="text-center text-sm mb-3">
+                Price: <span className="font-bold text-gold">${stockDef.price}</span>
+                {owned && (
+                  <span className="ml-2 text-muted-foreground">
+                    (Own {owned.shares} share{owned.shares > 1 ? 's' : ''})
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { onBuyStock(stockDef.id); setTraded(true); }}
+                  disabled={!canBuy}
+                  className={`flex-1 py-3 font-bold rounded-lg active:scale-[0.98] transition-transform ${
+                    canBuy
+                      ? 'bg-accent text-accent-foreground'
+                      : 'bg-muted text-muted-foreground cursor-not-allowed'
+                  }`}
+                >
+                  Buy ${stockDef.price}
+                </button>
+                {owned && (
+                  <button
+                    onClick={() => { onSellStock(stockDef.id); setTraded(true); }}
+                    className="flex-1 py-3 bg-destructive text-destructive-foreground font-bold rounded-lg active:scale-[0.98]"
+                  >
+                    Sell 1 Share
+                  </button>
+                )}
+                <button
+                  onClick={onSkipStock}
+                  className="flex-1 py-3 bg-muted text-muted-foreground font-bold rounded-lg active:scale-[0.98]"
+                >
+                  {traded ? 'Continue' : 'Skip'}
+                </button>
+              </div>
+            </div>
+          );
+        }
+
+        // If not on a stock tile, allow selling owned stocks by selecting one.
+        if (player.stocks.length === 0) {
+          return (
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-3">No stocks to sell.</p>
+              <button
+                onClick={onSkipStock}
+                className="w-full py-3 bg-muted text-muted-foreground font-bold rounded-lg active:scale-[0.98]"
+              >
+                Skip
+              </button>
+            </div>
+          );
+        }
 
         return (
           <div>
             <div className="text-center mb-3">
-              <span className={`badge-${stockDef.category} px-2 py-0.5 rounded text-xs inline-block mb-1`}>
-                {stockDef.category.toUpperCase()}
-              </span>
-              <h3 className="font-display text-lg font-bold">{stockDef.name}</h3>
-              <p className="text-xs text-muted-foreground">{stockDef.description}</p>
+              <h3 className="font-display text-lg font-bold">Sell a Stock</h3>
+              <p className="text-xs text-muted-foreground">You may sell one of your existing stocks.</p>
             </div>
-            <div className="text-center text-sm mb-3">
-              Price: <span className="font-bold text-gold">${stockDef.price}</span>
-              {owned && (
-                <span className="ml-2 text-muted-foreground">
-                  (Own {owned.shares} share{owned.shares > 1 ? 's' : ''})
-                </span>
-              )}
+
+            <div className="mb-3">
+              <select
+                value={selectedStockId ?? ''}
+                onChange={e => setSelectedStockId(e.target.value)}
+                className="w-full p-2 border rounded"
+              >
+                {player.stocks.map(s => {
+                  const def = stocks.find(sd => sd.id === s.stockId)!;
+                  return (
+                    <option key={s.stockId} value={s.stockId}>
+                      {def.name} (Own {s.shares}) - ${s.currentValue}
+                    </option>
+                  );
+                })}
+              </select>
             </div>
+
             <div className="flex gap-2">
               <button
-                onClick={() => onBuyStock(stockDef.id)}
-                disabled={!canBuy}
-                className={`flex-1 py-3 font-bold rounded-lg active:scale-[0.98] transition-transform ${
-                  canBuy
-                    ? 'bg-accent text-accent-foreground'
-                    : 'bg-muted text-muted-foreground cursor-not-allowed'
-                }`}
+                // Buy is disabled when not standing on a stock tile
+                disabled
+                className={`flex-1 py-3 font-bold rounded-lg active:scale-[0.98] transition-transform bg-muted text-muted-foreground cursor-not-allowed`}
               >
-                Buy ${stockDef.price}
+                Buy
               </button>
-              {owned && (
-                <button
-                  onClick={() => onSellStock(stockDef.id)}
-                  className="flex-1 py-3 bg-destructive text-destructive-foreground font-bold rounded-lg active:scale-[0.98]"
-                >
-                  Sell 1 Share
-                </button>
-              )}
+
+              <button
+                onClick={() => {
+                  if (selectedStockId) {
+                    onSellStock(selectedStockId);
+                    setTraded(true);
+                  }
+                }}
+                className="flex-1 py-3 bg-destructive text-destructive-foreground font-bold rounded-lg active:scale-[0.98]"
+              >
+                Sell 1 Share
+              </button>
+
               <button
                 onClick={onSkipStock}
                 className="flex-1 py-3 bg-muted text-muted-foreground font-bold rounded-lg active:scale-[0.98]"
               >
-                Skip
+                {traded ? 'Continue' : 'Skip'}
               </button>
             </div>
           </div>

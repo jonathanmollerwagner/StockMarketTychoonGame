@@ -381,6 +381,14 @@ export function useGameState() {
     });
   }, []);
 
+  const openStockAction = useCallback((stockId?: string) => {
+    setState(prev => ({
+      ...prev,
+      phase: 'stock_action',
+      currentTile: stockId ? { type: 'stock', stockId } : null,
+    }));
+  }, []);
+
   const currentPlayer = state.players[state.currentPlayerIndex] || null;
 
   const getPlayerNetWorth = useCallback((player: Player) => {
@@ -403,6 +411,7 @@ export function useGameState() {
     skipStockAction,
     rollStockValuation,
     endTurn,
+    openStockAction,
     getPlayerNetWorth,
   };
 }

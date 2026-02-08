@@ -11,6 +11,7 @@ const Index = () => {
     startGame, rollMovementDice, resolveLanding,
     applyEvent, applyChance, buyStock, sellStock,
     skipStockAction, rollStockValuation, endTurn,
+    openStockAction,
     getPlayerNetWorth,
   } = useGameState();
 
@@ -31,13 +32,14 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row gap-3 p-3 overflow-auto">
       {/* Left: HUD */}
-      <div className="lg:w-64 flex-shrink-0 order-2 lg:order-1">
+      <div className="lg:w-96 flex-shrink-0 order-2 lg:order-1">
         <GameHUD
           year={state.year}
           currentPlayer={currentPlayer!}
           players={state.players}
           getPlayerNetWorth={getPlayerNetWorth}
           stocks={stocks}
+          onRequestStockAction={openStockAction}
         />
       </div>
 

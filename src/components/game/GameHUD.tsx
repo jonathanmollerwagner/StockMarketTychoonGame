@@ -6,6 +6,7 @@ interface GameHUDProps {
   players: Player[];
   getPlayerNetWorth: (player: Player) => number;
   stocks: StockDefinition[];
+  onRequestStockAction: (stockId?: string) => void;
 }
 
 function getCategoryIcon(cat: string): string {
@@ -18,7 +19,7 @@ function getCategoryIcon(cat: string): string {
   }
 }
 
-export default function GameHUD({ year, currentPlayer, players, getPlayerNetWorth, stocks }: GameHUDProps) {
+export default function GameHUD({ year, currentPlayer, players, getPlayerNetWorth, stocks, onRequestStockAction }: GameHUDProps) {
   return (
     <div className="flex flex-col gap-3">
       {/* Year display */}
@@ -66,6 +67,7 @@ export default function GameHUD({ year, currentPlayer, players, getPlayerNetWort
             if (!stockDef) return null;
             const totalValue = ps.currentValue * ps.shares;
             const gainLoss = totalValue - ps.totalInvested;
+
             return (
               <div key={ps.stockId} className="flex items-center justify-between py-1 text-xs">
                 <div className="flex items-center gap-1">
@@ -80,6 +82,12 @@ export default function GameHUD({ year, currentPlayer, players, getPlayerNetWort
                   <span className={`ml-1 ${gainLoss >= 0 ? 'text-emerald-gain' : 'text-crimson-loss'}`}>
                     {gainLoss >= 0 ? '+' : ''}{gainLoss}
                   </span>
+                  <button
+                    onClick={() => onRequestStockAction(ps.stockId)}
+                    className="ml-2 py-2 px-2 bg-destructive text-destructive-foreground font-bold rounded-lg active:scale-[0.98]"
+                  >
+                    Sell
+                  </button>
                 </div>
               </div>
             );
