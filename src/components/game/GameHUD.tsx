@@ -8,6 +8,16 @@ interface GameHUDProps {
   stocks: StockDefinition[];
 }
 
+function getCategoryIcon(cat: string): string {
+  switch (cat) {
+    case 'energy': return '⚡';
+    case 'industry': return '🏭';
+    case 'tech': return '💻';
+    case 'consumption': return '🛒';
+    default: return '📊';
+  }
+}
+
 export default function GameHUD({ year, currentPlayer, players, getPlayerNetWorth, stocks }: GameHUDProps) {
   return (
     <div className="flex flex-col gap-3">
@@ -59,8 +69,8 @@ export default function GameHUD({ year, currentPlayer, players, getPlayerNetWort
             return (
               <div key={ps.stockId} className="flex items-center justify-between py-1 text-xs">
                 <div className="flex items-center gap-1">
-                  <span className={`badge-${stockDef.category} px-1.5 py-0.5 rounded text-[10px]`}>
-                    {stockDef.category.slice(0, 3).toUpperCase()}
+                  <span className={`badge-${stockDef.category} px-1.5 py-0.5 rounded text-[16px]`}>
+                    {getCategoryIcon(stockDef.category)}
                   </span>
                   <span className="font-medium">{stockDef.name}</span>
                   <span className="text-muted-foreground">×{ps.shares}</span>
