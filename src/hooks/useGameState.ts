@@ -82,7 +82,8 @@ export function useGameState() {
       );
 
       let nextPhase: GamePhase = 'landed';
-      if (tile.type === 'blank') nextPhase = 'stock_valuation';
+      const hasStocks = player.stocks.length > 0;
+      if (tile.type === 'blank') nextPhase = hasStocks ? 'stock_valuation' : 'turn_end';
 
       return {
         ...prev,
@@ -100,6 +101,8 @@ export function useGameState() {
       const tile = prev.currentTile;
       if (!tile) return prev;
 
+      const hasStocks = prev.players[prev.currentPlayerIndex].stocks.length > 0;
+
       if (tile.type === 'event') {
         const event = events[Math.floor(Math.random() * events.length)];
         return { ...prev, currentEvent: event, phase: 'event_display' };
@@ -111,7 +114,7 @@ export function useGameState() {
       if (tile.type === 'stock') {
         return { ...prev, phase: 'stock_action' };
       }
-      return { ...prev, phase: 'stock_valuation' };
+      return { ...prev, phase: hasStocks ? 'stock_valuation' : 'turn_end' };
     });
   }, []);
 
@@ -142,10 +145,11 @@ export function useGameState() {
         return { ...player, stocks: updatedStocks };
       });
 
+      const hasStocks = prev.players[prev.currentPlayerIndex].stocks.length > 0;
       return {
         ...prev,
         players: updatedPlayers,
-        phase: 'stock_valuation',
+        phase: hasStocks ? 'stock_valuation' : 'turn_end',
         gameLog: [`EVENT: ${event.title} - ${event.description}`, ...prev.gameLog].slice(0, 50),
       };
     });
@@ -210,10 +214,11 @@ export function useGameState() {
       }
 
       const updatedPlayers = prev.players.map((p, i) => i === idx ? player : p);
+      const hasStocks = prev.players[prev.currentPlayerIndex].stocks.length > 0;
       return {
         ...prev,
         players: updatedPlayers,
-        phase: 'stock_valuation',
+        phase: hasStocks ? 'stock_valuation' : 'turn_end',
         gameLog: [...log, ...prev.gameLog].slice(0, 50),
       };
     });
@@ -288,7 +293,10 @@ export function useGameState() {
   }, []);
 
   const skipStockAction = useCallback(() => {
-    setState(prev => ({ ...prev, phase: 'stock_valuation' }));
+    setState(prev => {
+      const hasStocks = prev.players[prev.currentPlayerIndex].stocks.length > 0;
+      return { ...prev, phase: hasStocks ? 'stock_valuation' : 'turn_end' };
+    });
   }, []);
 
   const rollStockValuation = useCallback(() => {
