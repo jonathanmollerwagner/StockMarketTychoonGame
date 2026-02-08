@@ -93,4 +93,6 @@ export interface GameState {
   stockRollResults: StockRollResult[];
   gameLog: string[];
   phaseBeforeStockAction: GamePhase | null;
+  phaseSavedTile: BoardTile | null;
+  phaseSavedLastDiceRoll: number | null;
 }

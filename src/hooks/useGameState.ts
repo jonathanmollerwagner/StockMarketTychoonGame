@@ -42,6 +42,8 @@ export function useGameState() {
     stockRollResults: [],
     gameLog: [],
     phaseBeforeStockAction: null,
+    phaseSavedTile: null,
+    phaseSavedLastDiceRoll: null,
   });
 
   const addLog = useCallback((msg: string) => {
@@ -70,6 +72,8 @@ export function useGameState() {
       stockRollResults: [],
       gameLog: [`Game started! Year ${START_YEAR}. ${players[0].name}'s turn.`],
       phaseBeforeStockAction: null,
+      phaseSavedTile: null,
+      phaseSavedLastDiceRoll: null,
     });
   }, []);
 
@@ -302,7 +306,10 @@ export function useGameState() {
           ...prev,
           phase: prev.phaseBeforeStockAction,
           phaseBeforeStockAction: null,
-          currentTile: null,
+          currentTile: prev.phaseSavedTile || null,
+          lastDiceRoll: prev.phaseSavedLastDiceRoll ?? null,
+          phaseSavedTile: null,
+          phaseSavedLastDiceRoll: null,
         };
       }
       // Otherwise, use normal flow (stock_valuation or turn_end)
@@ -389,6 +396,9 @@ export function useGameState() {
         currentTile: null,
         stockRollResults: [],
         gameLog: [...log, ...prev.gameLog].slice(0, 50),
+        phaseBeforeStockAction: null,
+        phaseSavedTile: null,
+        phaseSavedLastDiceRoll: null,
       };
     });
   }, []);
@@ -399,6 +409,8 @@ export function useGameState() {
       phase: 'stock_action',
       currentTile: stockId ? { type: 'stock', stockId } : null,
       phaseBeforeStockAction: stockId ? prev.phase : null,
+      phaseSavedTile: stockId ? prev.currentTile : null,
+      phaseSavedLastDiceRoll: stockId ? prev.lastDiceRoll ?? null : null,
     }));
   }, []);
 
