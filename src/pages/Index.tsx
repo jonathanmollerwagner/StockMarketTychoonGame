@@ -41,40 +41,41 @@ const Index = () => {
         />
       </div>
 
-      {/* Center: Board */}
-      <div className="flex-1 flex flex-col items-center justify-center order-1 lg:order-2">
+      {/* Center: Board with Turn Panel overlay */}
+      <div className="flex-1 flex flex-col items-center justify-center order-1 lg:order-2 relative">
         <GameBoard
           tiles={board}
           players={state.players}
           stocks={stocks}
           currentPlayerIndex={state.currentPlayerIndex}
         />
+
+        {/* Turn Panel - overlaid on board */}
+        <div className="absolute left-1/2 transform -translate-x-1/2 lg:w-72 flex-shrink-0 z-10">
+          <TurnPanel
+            state={state}
+            stocks={stocks}
+            onRollDice={rollMovementDice}
+            onResolveLanding={resolveLanding}
+            onApplyEvent={applyEvent}
+            onApplyChance={applyChance}
+            onBuyStock={buyStock}
+            onSellStock={sellStock}
+            onSkipStock={skipStockAction}
+            onRollValuation={rollStockValuation}
+            onEndTurn={endTurn}
+          />
+        </div>
       </div>
 
-      {/* Right: Turn Panel */}
+      {/* Right: Game log */}
       <div className="lg:w-72 flex-shrink-0 order-3">
-        <TurnPanel
-          state={state}
-          stocks={stocks}
-          onRollDice={rollMovementDice}
-          onResolveLanding={resolveLanding}
-          onApplyEvent={applyEvent}
-          onApplyChance={applyChance}
-          onBuyStock={buyStock}
-          onSellStock={sellStock}
-          onSkipStock={skipStockAction}
-          onRollValuation={rollStockValuation}
-          onEndTurn={endTurn}
-        />
-
-        {/* Game log */}
-        <div className="bg-card rounded-lg border border-border p-3 mt-3 max-h-40 overflow-y-auto">
+        <div className="bg-card rounded-lg border border-border p-3 mt-3 max-h-80 overflow-y-auto">
           <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Ticker</h3>
           {state.gameLog.slice(0, 15).map((log, i) => (
-            <p key={i} className={`text-xs py-0.5 ${i === 0 ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
-              {log}
-            </p>
-          ))}
+            <p key={i} className={`text-xs py-0.5 ${i === 0 ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>                {log}
+              </p>
+            ))}
         </div>
       </div>
     </div>
