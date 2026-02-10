@@ -47,6 +47,7 @@ export function useGameState() {
     currentChance: null,
     currentTile: null,
     stockRollResults: [],
+    stockValues: {},
     gameLog: [],
     phaseBeforeStockAction: null,
     phaseSavedTile: null,
@@ -68,6 +69,13 @@ export function useGameState() {
       color: PLAYER_COLORS[i],
       emoji: PLAYER_EMOJI[i] || `P${i + 1}`,
     }));
+    
+    // Initialize stock values from stock definitions
+    const stockValues: { [id: string]: number } = {};
+    stocks.forEach(s => {
+      stockValues[s.id] = s.price;
+    });
+    
     setState({
       players,
       currentPlayerIndex: 0,
@@ -78,6 +86,7 @@ export function useGameState() {
       currentChance: null,
       currentTile: null,
       stockRollResults: [],
+      stockValues,
       gameLog: [`Game started! Year ${START_YEAR}. ${players[0].name}'s turn.`],
       phaseBeforeStockAction: null,
       phaseSavedTile: null,
@@ -96,8 +105,6 @@ export function useGameState() {
       );
 
       let nextPhase: GamePhase = 'landed';
-      const hasStocks = player.stocks.length > 0;
-      if (tile.type === 'blank') nextPhase = hasStocks ? 'stock_valuation' : 'turn_end';
 
       return {
         ...prev,
@@ -115,8 +122,6 @@ export function useGameState() {
       const tile = prev.currentTile;
       if (!tile) return prev;
 
-      const hasStocks = prev.players[prev.currentPlayerIndex].stocks.length > 0;
-
       if (tile.type === 'event') {
         const event = events[Math.floor(Math.random() * events.length)];
         return { ...prev, currentEvent: event, phase: 'event_display' };
@@ -128,7 +133,7 @@ export function useGameState() {
       if (tile.type === 'stock') {
         return { ...prev, phase: 'stock_action' };
       }
-      return { ...prev, phase: hasStocks ? 'stock_valuation' : 'turn_end' };
+      return { ...prev, phase: 'turn_end' };
     });
   }, []);
 
@@ -137,33 +142,20 @@ export function useGameState() {
       const event = prev.currentEvent;
       if (!event) return prev;
 
-      const updatedPlayers = prev.players.map(player => {
-        const updatedStocks = player.stocks.map(ps => {
-          const stockDef = getStockById(ps.stockId);
-          if (!stockDef) return ps;
-
-          const affected = event.impact.category === 'all' || event.impact.category === stockDef.category;
-          if (!affected) return ps;
-
-          let modifier = event.impact.modifier;
-          // Check weakness
-          const weakness = player.nationality.weakness;
-          if (event.tags.some(t => t === weakness.eventTag) && stockDef.category === weakness.category) {
-            modifier -= weakness.extraPenalty;
-          }
-
-          const change = ps.currentValue * (modifier / 100);
-          const newValue = Math.max(1, ps.currentValue + change);
-          return { ...ps, currentValue: Math.round(newValue) };
-        });
-        return { ...player, stocks: updatedStocks };
+      // Update global stock values based on event impact
+      const updatedStockValues = { ...prev.stockValues };
+      stocks.forEach(stock => {
+        const affected = event.impact.category === 'all' || event.impact.category === stock.category;
+        if (affected) {
+          const change = updatedStockValues[stock.id] * (event.impact.modifier / 100);
+          updatedStockValues[stock.id] = Math.max(1, updatedStockValues[stock.id] + change);
+        }
       });
 
-      const hasStocks = prev.players[prev.currentPlayerIndex].stocks.length > 0;
       return {
         ...prev,
-        players: updatedPlayers,
-        phase: hasStocks ? 'stock_valuation' : 'turn_end',
+        stockValues: updatedStockValues,
+        phase: 'turn_end',
         gameLog: [`EVENT: ${event.title} - ${event.description}`, ...prev.gameLog].slice(0, 50),
       };
     });
@@ -176,6 +168,7 @@ export function useGameState() {
       const idx = prev.currentPlayerIndex;
       const player = { ...prev.players[idx] };
       const log: string[] = [`CHANCE: ${chance.title} - ${chance.description}`];
+      let updatedStockValues = { ...prev.stockValues };
 
       switch (chance.effect) {
         case 'gain_cash':
@@ -183,10 +176,16 @@ export function useGameState() {
           log.push(`${player.name} gained $${chance.value}.`);
           break;
         case 'lose_cash':
-          if (player.cash < chance.value && player.stocks.length > 0) {
-            // Force sell cheapest stock
-            const cheapest = [...player.stocks].sort((a, b) => a.currentValue - b.currentValue)[0];
-            const sellValue = Math.min(cheapest.currentValue, cheapest.totalInvested / cheapest.shares);
+          if (player.cash >= chance.value) {
+            player.cash -= chance.value;
+          } else if (player.stocks.length > 0) {
+            // Force sell cheapest stock to cover
+            const cheapest = [...player.stocks].sort((a, b) => {
+              const aValue = prev.stockValues[a.stockId] || 0;
+              const bValue = prev.stockValues[b.stockId] || 0;
+              return aValue - bValue;
+            })[0];
+            const sellValue = Math.round((prev.stockValues[cheapest.stockId] || 0) * 0.9);
             player.cash += sellValue;
             player.stocks = player.stocks.filter(s => s.stockId !== cheapest.stockId || s.shares > 1);
             if (player.stocks.find(s => s.stockId === cheapest.stockId)) {
@@ -198,41 +197,43 @@ export function useGameState() {
           log.push(`${player.name} lost $${chance.value}.`);
           break;
         case 'boost_random_stock':
-          if (player.stocks.length > 0) {
-            const ri = Math.floor(Math.random() * player.stocks.length);
-            player.stocks = player.stocks.map((s, i) =>
-              i === ri ? { ...s, currentValue: Math.round(s.currentValue * (1 + chance.value / 100)) } : s
-            );
+          {
+            const randomStockIds = Object.keys(updatedStockValues);
+            if (randomStockIds.length > 0) {
+              const ri = Math.floor(Math.random() * randomStockIds.length);
+              const stockId = randomStockIds[ri];
+              updatedStockValues[stockId] = Math.round(updatedStockValues[stockId] * (1 + chance.value / 100));
+            }
           }
           break;
         case 'hurt_random_stock':
-          if (player.stocks.length > 0) {
-            const ri = Math.floor(Math.random() * player.stocks.length);
-            player.stocks = player.stocks.map((s, i) =>
-              i === ri ? { ...s, currentValue: Math.max(1, Math.round(s.currentValue * (1 - chance.value / 100))) } : s
-            );
+          {
+            const randomStockIds = Object.keys(updatedStockValues);
+            if (randomStockIds.length > 0) {
+              const ri = Math.floor(Math.random() * randomStockIds.length);
+              const stockId = randomStockIds[ri];
+              updatedStockValues[stockId] = Math.max(1, Math.round(updatedStockValues[stockId] * (1 - chance.value / 100)));
+            }
           }
           break;
         case 'boost_all_stocks':
-          player.stocks = player.stocks.map(s => ({
-            ...s,
-            currentValue: Math.round(s.currentValue * (1 + chance.value / 100)),
-          }));
+          Object.keys(updatedStockValues).forEach(stockId => {
+            updatedStockValues[stockId] = Math.round(updatedStockValues[stockId] * (1 + chance.value / 100));
+          });
           break;
         case 'hurt_all_stocks':
-          player.stocks = player.stocks.map(s => ({
-            ...s,
-            currentValue: Math.max(1, Math.round(s.currentValue * (1 - chance.value / 100))),
-          }));
+          Object.keys(updatedStockValues).forEach(stockId => {
+            updatedStockValues[stockId] = Math.max(1, Math.round(updatedStockValues[stockId] * (1 - chance.value / 100)));
+          });
           break;
       }
 
       const updatedPlayers = prev.players.map((p, i) => i === idx ? player : p);
-      const hasStocks = prev.players[prev.currentPlayerIndex].stocks.length > 0;
       return {
         ...prev,
         players: updatedPlayers,
-        phase: hasStocks ? 'stock_valuation' : 'turn_end',
+        stockValues: updatedStockValues,
+        phase: 'turn_end',
         gameLog: [...log, ...prev.gameLog].slice(0, 50),
       };
     });
@@ -244,22 +245,25 @@ export function useGameState() {
       if (!stockDef) return prev;
       const idx = prev.currentPlayerIndex;
       const player = { ...prev.players[idx] };
-      if (player.cash < stockDef.price) return prev;
+      
+      const buyPrice = prev.stockValues[stockId] || stockDef.price;
+      
+      if (player.cash < buyPrice) return prev;
 
-      player.cash -= stockDef.price;
+      player.cash -= buyPrice;
+      
       const existing = player.stocks.find(s => s.stockId === stockId);
       if (existing) {
         player.stocks = player.stocks.map(s =>
           s.stockId === stockId
-            ? { ...s, shares: s.shares + 1, totalInvested: s.totalInvested + stockDef.price }
+            ? { ...s, shares: s.shares + 1, totalInvested: s.totalInvested + buyPrice }
             : s
         );
       } else {
         player.stocks = [...player.stocks, {
           stockId,
           shares: 1,
-          totalInvested: stockDef.price,
-          currentValue: stockDef.price,
+          totalInvested: buyPrice,
         }];
       }
 
@@ -267,7 +271,7 @@ export function useGameState() {
       return {
         ...prev,
         players: updatedPlayers,
-        gameLog: [`${player.name} bought ${stockDef.name} for $${stockDef.price}.`, ...prev.gameLog].slice(0, 50),
+        gameLog: [`${player.name} bought ${stockDef.name} for $${buyPrice}.`, ...prev.gameLog].slice(0, 50),
       };
     });
   }, []);
@@ -281,15 +285,16 @@ export function useGameState() {
       const stock = player.stocks.find(s => s.stockId === stockId);
       if (!stock || stock.shares <= 0) return prev;
 
-      // Sell at market price, but never more than original purchase price per share
-      const pricePerShare = stock.totalInvested / stock.shares;
-      const sellPrice = Math.min(stock.currentValue, pricePerShare);
+      // Sell at global stock value minus 10% spread
+      const currentValue = prev.stockValues[stockId] || 0;
+      const sellPrice = Math.round(currentValue * 0.9);
 
-      player.cash += Math.round(sellPrice);
+      player.cash += sellPrice;
 
       if (stock.shares === 1) {
         player.stocks = player.stocks.filter(s => s.stockId !== stockId);
       } else {
+        const pricePerShare = stock.totalInvested / stock.shares;
         player.stocks = player.stocks.map(s =>
           s.stockId === stockId
             ? { ...s, shares: s.shares - 1, totalInvested: s.totalInvested - pricePerShare }
@@ -301,7 +306,7 @@ export function useGameState() {
       return {
         ...prev,
         players: updatedPlayers,
-        gameLog: [`${player.name} sold 1 share of ${stockDef.name} for $${Math.round(sellPrice)}.`, ...prev.gameLog].slice(0, 50),
+        gameLog: [`${player.name} sold 1 share of ${stockDef.name} for $${sellPrice} (10% spread applied).`, ...prev.gameLog].slice(0, 50),
       };
     });
   }, []);
@@ -320,59 +325,87 @@ export function useGameState() {
           phaseSavedLastDiceRoll: null,
         };
       }
-      // Otherwise, use normal flow (stock_valuation or turn_end)
-      const hasStocks = prev.players[prev.currentPlayerIndex].stocks.length > 0;
-      return { ...prev, phase: hasStocks ? 'stock_valuation' : 'turn_end' };
+      // Move to turn_end (stock valuation will happen on last player's turn)
+      return { ...prev, phase: 'turn_end' };
     });
   }, []);
 
   const rollStockValuation = useCallback(() => {
     setState(prev => {
-      const player = prev.players[prev.currentPlayerIndex];
-      if (player.stocks.length === 0) {
+      // Only the last player can trigger valuation
+      const isLastPlayer = prev.currentPlayerIndex === prev.players.length - 1;
+      if (!isLastPlayer) {
+        return { ...prev, phase: 'turn_end' };
+      }
+
+      // Find all unique stocks that are owned by any player
+      const ownedStockIds = new Set<string>();
+      prev.players.forEach(player => {
+        player.stocks.forEach(ps => {
+          ownedStockIds.add(ps.stockId);
+        });
+      });
+
+      if (ownedStockIds.size === 0) {
         return { ...prev, phase: 'turn_end', stockRollResults: [] };
       }
 
-      const results: StockRollResult[] = player.stocks.map(ps => {
-        const stockDef = getStockById(ps.stockId)!;
+      // Roll for each owned stock
+      const results: StockRollResult[] = Array.from(ownedStockIds).map(stockId => {
+        const stockDef = getStockById(stockId)!;
         const roll = rollDie(20);
         const diff = roll - stockDef.neutralRoll;
         const rawPercent = diff * stockDef.rateOfChange;
-
-        let nationalityBonus = 0;
-        if (stockDef.category === player.nationality.bonus.category) {
-          nationalityBonus = rawPercent > 0 ? player.nationality.bonus.percentage : 0;
-        }
-
-        const totalChange = rawPercent + nationalityBonus;
-        const oldValue = ps.currentValue;
+        const totalChange = rawPercent;
+        const oldValue = prev.stockValues[stockId];
         const newValue = Math.max(1, Math.round(oldValue * (1 + totalChange / 100)));
 
         return {
-          stockId: ps.stockId,
+          stockId,
           stockName: stockDef.name,
           roll,
           multiplier: diff,
           percentChange: rawPercent,
-          nationalityBonus,
           totalChange,
           oldValue,
           newValue,
         };
       });
 
-      const updatedStocks = player.stocks.map(ps => {
-        const result = results.find(r => r.stockId === ps.stockId);
-        return result ? { ...ps, currentValue: result.newValue } : ps;
+      // Update global stock values
+      const updatedStockValues = { ...prev.stockValues };
+      results.forEach(result => {
+        updatedStockValues[result.stockId] = result.newValue;
       });
 
-      const updatedPlayers = prev.players.map((p, i) =>
-        i === prev.currentPlayerIndex ? { ...p, stocks: updatedStocks } : p
-      );
+      // Calculate and apply dividends to all players
+      const updatedPlayers = prev.players.map(player => {
+        let dividendCash = 0;
+        
+        player.stocks.forEach(ps => {
+          const stockDef = getStockById(ps.stockId)!;
+          const result = results.find(r => r.stockId === ps.stockId);
+          if (!result) return;
+
+          // Dividend = shares * old value * (change % / 100)
+          const valueChange = result.newValue - result.oldValue;
+          const dividend = Math.round(ps.shares * valueChange);
+          dividendCash += dividend;
+
+          // Apply nationality bonus as additional dividend
+          if (stockDef.category === player.nationality.bonus.category && result.percentChange > 0) {
+            const bonusAmount = Math.round(ps.shares * result.oldValue * (player.nationality.bonus.percentage / 100));
+            dividendCash += bonusAmount;
+          }
+        });
+
+        return { ...player, cash: player.cash + dividendCash };
+      });
 
       return {
         ...prev,
         players: updatedPlayers,
+        stockValues: updatedStockValues,
         stockRollResults: results,
         phase: 'valuation_results',
       };
@@ -381,6 +414,116 @@ export function useGameState() {
 
   const endTurn = useCallback(() => {
     setState(prev => {
+      // If we're coming from valuation_results, advance to next player
+      if (prev.phase === 'valuation_results') {
+        const nextIdx = (prev.currentPlayerIndex + 1) % prev.players.length;
+        const yearAdvance = nextIdx === 0;
+        const newYear = yearAdvance ? prev.year + 1 : prev.year;
+
+        if (newYear > END_YEAR) {
+          return { ...prev, phase: 'game_over' };
+        }
+
+        const log = yearAdvance
+          ? [`--- Year ${newYear} begins ---`, `${prev.players[nextIdx].name}'s turn.`]
+          : [`${prev.players[nextIdx].name}'s turn.`];
+
+        return {
+          ...prev,
+          currentPlayerIndex: nextIdx,
+          year: newYear,
+          phase: 'rolling',
+          lastDiceRoll: null,
+          currentEvent: null,
+          currentChance: null,
+          currentTile: null,
+          stockRollResults: [],
+          gameLog: [...log, ...prev.gameLog].slice(0, 50),
+          phaseBeforeStockAction: null,
+          phaseSavedTile: null,
+          phaseSavedLastDiceRoll: null,
+        };
+      }
+
+      const isLastPlayer = prev.currentPlayerIndex === prev.players.length - 1;
+      
+      // If this is the last player's turn, perform stock valuation automatically
+      if (isLastPlayer) {
+        // Find all unique stocks that are owned by any player
+        const ownedStockIds = new Set<string>();
+        prev.players.forEach(player => {
+          player.stocks.forEach(ps => {
+            ownedStockIds.add(ps.stockId);
+          });
+        });
+
+        // If there are stocks to valuate, perform valuation
+        if (ownedStockIds.size > 0) {
+          // Roll for each owned stock
+          const results: StockRollResult[] = Array.from(ownedStockIds).map(stockId => {
+            const stockDef = getStockById(stockId)!;
+            const roll = rollDie(20);
+            const diff = roll - stockDef.neutralRoll;
+            const rawPercent = diff * stockDef.rateOfChange;
+            const totalChange = rawPercent;
+            const oldValue = prev.stockValues[stockId];
+            const newValue = Math.max(1, Math.round(oldValue * (1 + totalChange / 100)));
+
+            return {
+              stockId,
+              stockName: stockDef.name,
+              roll,
+              multiplier: diff,
+              percentChange: rawPercent,
+              totalChange,
+              oldValue,
+              newValue,
+            };
+          });
+
+          // Update global stock values
+          const updatedStockValues = { ...prev.stockValues };
+          results.forEach(result => {
+            updatedStockValues[result.stockId] = result.newValue;
+          });
+
+          // Calculate and apply dividends to all players
+          const updatedPlayers = prev.players.map(player => {
+            let dividendCash = 0;
+            
+            player.stocks.forEach(ps => {
+              const stockDef = getStockById(ps.stockId)!;
+              const result = results.find(r => r.stockId === ps.stockId);
+              if (!result) return;
+
+              // Dividend = shares * old value * (change % / 100)
+              const valueChange = result.newValue - result.oldValue;
+              const dividend = Math.round(ps.shares * valueChange);
+              dividendCash += dividend;
+
+              // Apply nationality bonus as additional dividend
+              if (stockDef.category === player.nationality.bonus.category && result.percentChange > 0) {
+                const bonusAmount = Math.round(ps.shares * result.oldValue * (player.nationality.bonus.percentage / 100));
+                dividendCash += bonusAmount;
+              }
+            });
+
+            return { ...player, cash: player.cash + dividendCash };
+          });
+
+          // Return to valuation_results phase with calculated dividends
+          return {
+            ...prev,
+            players: updatedPlayers,
+            stockValues: updatedStockValues,
+            stockRollResults: results,
+            phase: 'valuation_results',
+            gameLog: [`Stock valuation round complete.`, ...prev.gameLog].slice(0, 50),
+          };
+        }
+      }
+
+      // Not the last player or no stocks to valuate, advance to next player
       const nextIdx = (prev.currentPlayerIndex + 1) % prev.players.length;
       const yearAdvance = nextIdx === 0;
       const newYear = yearAdvance ? prev.year + 1 : prev.year;
@@ -425,9 +568,9 @@ export function useGameState() {
   const currentPlayer = state.players[state.currentPlayerIndex] || null;
 
   const getPlayerNetWorth = useCallback((player: Player) => {
-    const stockValue = player.stocks.reduce((sum, s) => sum + s.currentValue * s.shares, 0);
+    const stockValue = player.stocks.reduce((sum, s) => sum + (state.stockValues[s.stockId] || 0) * s.shares, 0);
     return player.cash + stockValue;
-  }, []);
+  }, [state.stockValues]);
 
   return {
     state,

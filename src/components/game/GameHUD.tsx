@@ -6,6 +6,7 @@ interface GameHUDProps {
   players: Player[];
   getPlayerNetWorth: (player: Player) => number;
   stocks: StockDefinition[];
+  stockValues: { [stockId: string]: number };
   onRequestStockAction: (stockId?: string) => void;
 }
 
@@ -19,7 +20,7 @@ function getCategoryIcon(cat: string): string {
   }
 }
 
-export default function GameHUD({ year, currentPlayer, players, getPlayerNetWorth, stocks, onRequestStockAction }: GameHUDProps) {
+export default function GameHUD({ year, currentPlayer, players, getPlayerNetWorth, stocks, stockValues, onRequestStockAction }: GameHUDProps) {
   return (
     <div className="flex flex-col gap-3">
       {/* Year display */}
@@ -65,7 +66,8 @@ export default function GameHUD({ year, currentPlayer, players, getPlayerNetWort
           currentPlayer.stocks.map(ps => {
             const stockDef = stocks.find(s => s.id === ps.stockId);
             if (!stockDef) return null;
-            const totalValue = ps.currentValue * ps.shares;
+            const currentValue = stockValues[ps.stockId] || 0;
+            const totalValue = currentValue * ps.shares;
             const gainLoss = totalValue - ps.totalInvested;
 
             return (

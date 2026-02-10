@@ -39,6 +39,7 @@ const Index = () => {
           players={state.players}
           getPlayerNetWorth={getPlayerNetWorth}
           stocks={stocks}
+          stockValues={state.stockValues}
           onRequestStockAction={openStockAction}
         />
       </div>

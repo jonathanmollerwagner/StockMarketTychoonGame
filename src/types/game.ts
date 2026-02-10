@@ -23,7 +23,6 @@ export interface PlayerStock {
   stockId: string;
   shares: number; // number of times purchased
   totalInvested: number;
-  currentValue: number; // market value per share for this player
 }
 
 export interface Player {
@@ -76,7 +75,6 @@ export interface StockRollResult {
   roll: number;
   multiplier: number;
   percentChange: number;
-  nationalityBonus: number;
   totalChange: number;
   oldValue: number;
   newValue: number;
@@ -92,6 +90,7 @@ export interface GameState {
   currentChance: ChanceCard | null;
   currentTile: BoardTile | null;
   stockRollResults: StockRollResult[];
+  stockValues: { [stockId: string]: number }; // global stock values
   gameLog: string[];
   phaseBeforeStockAction: GamePhase | null;
   phaseSavedTile: BoardTile | null;

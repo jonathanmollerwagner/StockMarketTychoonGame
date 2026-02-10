@@ -190,9 +190,10 @@ export default function TurnPanel({
               >
                 {player.stocks.map(s => {
                   const def = stocks.find(sd => sd.id === s.stockId)!;
+                  const currentValue = state.stockValues[s.stockId] || 0;
                   return (
                     <option key={s.stockId} value={s.stockId}>
-                      {def.name} (Own {s.shares}) - ${s.currentValue}
+                      {def.name} (Own {s.shares}) - ${currentValue}
                     </option>
                   );
                 })}
@@ -230,19 +231,6 @@ export default function TurnPanel({
           </div>
         );
       })()}
-
-      {/* Stock valuation */}
-      {state.phase === 'stock_valuation' && (
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground mb-3">Time to roll for stock valuation!</p>
-          <button
-            onClick={onRollValuation}
-            className="w-full py-4 bg-primary text-primary-foreground font-display text-xl font-bold rounded-lg glow-gold hover:scale-[1.02] transition-transform active:scale-[0.98]"
-          >
-            🎯 Roll D20 for Stocks
-          </button>
-        </div>
-      )}
 
       {/* Valuation results */}
       {state.phase === 'valuation_results' && (
