@@ -430,34 +430,33 @@ export function useGameState() {
       // Calculate dividends based on nationality bonuses
       const { dividendResults, updatedPlayers } = calculateDividends(results, prev);
 
-      // If there are dividends to display, show the dividend phase, otherwise skip to valuation results
-      if (dividendResults.length > 0) {
-        return {
-          ...prev,
-          players: updatedPlayers,
-          stockValues: updatedStockValues,
-          stockRollResults: results,
-          dividendResults,
-          phase: 'dividend_display',
-          gameLog: [`Stock valuation complete. Dividends being distributed...`, ...prev.gameLog].slice(0, 50),
-        };
-      }
-
+      // Always show valuation results first, store dividends to show after
       return {
         ...prev,
         players: updatedPlayers,
         stockValues: updatedStockValues,
         stockRollResults: results,
-        dividendResults: [],
+        dividendResults,
         phase: 'valuation_results',
+        gameLog: [`Stock valuation complete.`, ...prev.gameLog].slice(0, 50),
       };
     });
   }, []);
 
   const endTurn = useCallback(() => {
     setState(prev => {
-      // If we're coming from valuation_results, advance to next player
+      // If we're coming from valuation_results, check for dividends to display
       if (prev.phase === 'valuation_results') {
+        // If there are dividends to display, show them before advancing to next player
+        if (prev.dividendResults.length > 0) {
+          return {
+            ...prev,
+            phase: 'dividend_display',
+            gameLog: [`Dividend distribution...`, ...prev.gameLog].slice(0, 50),
+          };
+        }
+
+        // No dividends, advance to next player
         const nextIdx = (prev.currentPlayerIndex + 1) % prev.players.length;
         const yearAdvance = nextIdx === 0;
         const newYear = yearAdvance ? prev.year + 1 : prev.year;
@@ -480,6 +479,7 @@ export function useGameState() {
           currentChance: null,
           currentTile: null,
           stockRollResults: [],
+          dividendResults: [],
           gameLog: [...log, ...prev.gameLog].slice(0, 50),
           phaseBeforeStockAction: null,
           phaseSavedTile: null,
@@ -532,26 +532,13 @@ export function useGameState() {
           // Calculate dividends based on nationality bonuses
           const { dividendResults, updatedPlayers } = calculateDividends(results, prev);
 
-          // If there are dividends to display, show the dividend phase, otherwise skip to valuation results
-          if (dividendResults.length > 0) {
-            return {
-              ...prev,
-              players: updatedPlayers,
-              stockValues: updatedStockValues,
-              stockRollResults: results,
-              dividendResults,
-              phase: 'dividend_display',
-              gameLog: [`Stock valuation complete. Dividends being distributed...`, ...prev.gameLog].slice(0, 50),
-            };
-          }
-
-          // Return to valuation_results phase with calculated dividends
+          // Always show valuation results first, store dividends to show after
           return {
             ...prev,
             players: updatedPlayers,
             stockValues: updatedStockValues,
             stockRollResults: results,
-            dividendResults: [],
+            dividendResults,
             phase: 'valuation_results',
             gameLog: [`Stock valuation round complete.`, ...prev.gameLog].slice(0, 50),
           };
@@ -590,11 +577,37 @@ export function useGameState() {
   }, []);
 
   const acknowledgeDividends = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      phase: 'valuation_results',
-      dividendResults: [],
-    }));
+    setState(prev => {
+      // Advance to next player
+      const nextIdx = (prev.currentPlayerIndex + 1) % prev.players.length;
+      const yearAdvance = nextIdx === 0;
+      const newYear = yearAdvance ? prev.year + 1 : prev.year;
+
+      if (newYear > END_YEAR) {
+        return { ...prev, phase: 'game_over' };
+      }
+
+      const log = yearAdvance
+        ? [`--- Year ${newYear} begins ---`, `${prev.players[nextIdx].name}'s turn.`]
+        : [`${prev.players[nextIdx].name}'s turn.`];
+
+      return {
+        ...prev,
+        currentPlayerIndex: nextIdx,
+        year: newYear,
+        phase: 'rolling',
+        lastDiceRoll: null,
+        currentEvent: null,
+        currentChance: null,
+        currentTile: null,
+        stockRollResults: [],
+        dividendResults: [],
+        gameLog: [...log, ...prev.gameLog].slice(0, 50),
+        phaseBeforeStockAction: null,
+        phaseSavedTile: null,
+        phaseSavedLastDiceRoll: null,
+      };
+    });
   }, []);
 
   const openStockAction = useCallback((stockId?: string) => {
