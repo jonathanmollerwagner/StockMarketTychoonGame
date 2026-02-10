@@ -42,7 +42,7 @@ export default function GameHUD({ year, currentPlayer, players, getPlayerNetWort
               }`}
             >
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: p.color }} />
+                <span className="text-lg leading-none block">{p.emoji}</span>
                 <span className="font-semibold">{p.name}</span>
                 <span className="text-xs">{p.nationality.flag}</span>
               </div>

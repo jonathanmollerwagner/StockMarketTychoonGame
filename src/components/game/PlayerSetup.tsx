@@ -5,21 +5,22 @@ import nationalitiesData from '@/data/nationalities.json';
 const nationalities = nationalitiesData as Nationality[];
 
 interface PlayerSetupProps {
-  onStartGame: (players: { name: string; nationality: Nationality }[]) => void;
+  onStartGame: (players: { name: string; emoji: string; nationality: Nationality }[]) => void;
 }
 
 export default function PlayerSetup({ onStartGame }: PlayerSetupProps) {
   const [playerCount, setPlayerCount] = useState(2);
-  const [players, setPlayers] = useState<{ name: string; nationalityId: string }[]>([
-    { name: 'Player 1', nationalityId: 'usa' },
-    { name: 'Player 2', nationalityId: 'norway' },
-    { name: 'Player 3', nationalityId: 'japan' },
-    { name: 'Player 4', nationalityId: 'uk' },
+  const [players, setPlayers] = useState<{ name: string; emoji: string; nationalityId: string }[]>([
+    { name: 'Player 1', emoji: '👤', nationalityId: 'usa' },
+    { name: 'Player 2', emoji: '🚀', nationalityId: 'norway' },
+    { name: 'Player 3', emoji: '👽', nationalityId: 'japan' },
+    { name: 'Player 4', emoji: '⭐', nationalityId: 'uk' },
   ]);
 
   const handleStart = () => {
     const configs = players.slice(0, playerCount).map(p => ({
       name: p.name,
+      emoji: p.emoji,
       nationality: nationalities.find(n => n.id === p.nationalityId)!,
     }));
     onStartGame(configs);
@@ -60,10 +61,7 @@ export default function PlayerSetup({ onStartGame }: PlayerSetupProps) {
           {players.slice(0, playerCount).map((player, idx) => (
             <div key={idx} className="mb-4 p-4 rounded-lg bg-muted/50 border border-border">
               <div className="flex items-center gap-3 mb-3">
-                <div
-                  className="w-4 h-4 rounded-full"
-                  style={{ backgroundColor: `hsl(var(--player-${idx + 1}))` }}
-                />
+                <span className="text-lg leading-none block">{player.emoji}</span>
                 <input
                   type="text"
                   value={player.name}

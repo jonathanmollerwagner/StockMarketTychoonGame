@@ -21,6 +21,13 @@ const PLAYER_COLORS = [
   'hsl(var(--player-4))',
 ];
 
+const PLAYER_EMOJI = [
+  '👤',
+  '🚀',
+  '👽',
+  '⭐',
+];
+
 function rollDie(sides: number): number {
   return Math.floor(Math.random() * sides) + 1;
 }
@@ -59,6 +66,7 @@ export function useGameState() {
       position: 0,
       stocks: [],
       color: PLAYER_COLORS[i],
+      emoji: PLAYER_EMOJI[i] || `P${i + 1}`,
     }));
     setState({
       players,

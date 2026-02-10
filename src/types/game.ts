@@ -34,6 +34,7 @@ export interface Player {
   position: number;
   stocks: PlayerStock[];
   color: string;
+  emoji: string;
 }
 
 export interface EventCard {

@@ -95,11 +95,9 @@ export default function GameBoard({ tiles, players, stocks, currentPlayerIndex }
               {playersHere.length > 0 && (
                 <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-px pb-0.5">
                   {playersHere.map(p => (
-                    <div
-                      key={p.id}
-                      className="w-2.5 h-2.5 rounded-full border border-foreground/30"
-                      style={{ backgroundColor: p.color }}
-                    />
+                    <div key={p.id} className="flex flex-col items-center gap-0">
+                      <span className="text-lg leading-none block">{p.emoji}</span>
+                    </div>
                   ))}
                 </div>
               )}
