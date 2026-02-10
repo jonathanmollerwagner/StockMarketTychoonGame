@@ -47,7 +47,7 @@ export default function GameHUD({ year, currentPlayer, players, getPlayerNetWort
                 <span className="font-semibold">{p.name}</span>
                 <span className="text-xs">{p.nationality.flag}</span>
               </div>
-              <span className="font-bold text-gold">${p.netWorth.toLocaleString()}</span>
+              <span className="font-bold text-gold">${Math.round(p.netWorth).toLocaleString()}</span>
             </div>
           ))}
       </div>
@@ -58,7 +58,7 @@ export default function GameHUD({ year, currentPlayer, players, getPlayerNetWort
           {currentPlayer.name}'s Portfolio
         </h3>
         <div className="text-sm mb-2">
-          💰 Cash: <span className="font-bold text-gold">${currentPlayer.cash.toLocaleString()}</span>
+          💰 Cash: <span className="font-bold text-gold">${Math.round(currentPlayer.cash).toLocaleString()}</span>
         </div>
         {currentPlayer.stocks.length === 0 ? (
           <p className="text-xs text-muted-foreground italic">No stocks owned yet</p>
@@ -66,9 +66,9 @@ export default function GameHUD({ year, currentPlayer, players, getPlayerNetWort
           currentPlayer.stocks.map(ps => {
             const stockDef = stocks.find(s => s.id === ps.stockId);
             if (!stockDef) return null;
-            const currentValue = stockValues[ps.stockId] || 0;
-            const totalValue = currentValue * ps.shares;
-            const gainLoss = totalValue - ps.totalInvested;
+            const currentValue = Math.round(stockValues[ps.stockId] || 0);
+            const totalValue = Math.round(currentValue * ps.shares);
+            const gainLoss = Math.round(totalValue - ps.totalInvested);
 
             return (
               <div key={ps.stockId} className="flex items-center justify-between py-1 text-xs">
@@ -80,7 +80,7 @@ export default function GameHUD({ year, currentPlayer, players, getPlayerNetWort
                   <span className="text-muted-foreground">×{ps.shares}</span>
                 </div>
                 <div className="text-right">
-                  <span className="font-bold">${totalValue.toLocaleString()}</span>
+                  <span className="font-bold">${Math.round(totalValue).toLocaleString()}</span>
                   <span className={`ml-1 ${gainLoss >= 0 ? 'text-emerald-gain' : 'text-crimson-loss'}`}>
                     {gainLoss >= 0 ? '+' : ''}{gainLoss}
                   </span>

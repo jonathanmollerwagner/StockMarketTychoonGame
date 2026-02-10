@@ -110,7 +110,8 @@ export default function TurnPanel({
           const stockDef = stocks.find(s => s.id === tileStockId);
           if (!stockDef) return null;
           const owned = player.stocks.find(s => s.stockId === stockDef.id);
-          const canBuy = player.cash >= stockDef.price;
+          const currentPrice = Math.round(state.stockValues[tileStockId] || stockDef.price);
+          const canBuy = player.cash >= currentPrice;
 
           return (
             <div>
@@ -122,7 +123,7 @@ export default function TurnPanel({
                 <p className="text-xs text-muted-foreground">{stockDef.description}</p>
               </div>
               <div className="text-center text-sm mb-3">
-                Price: <span className="font-bold text-gold">${stockDef.price}</span>
+                Price: <span className="font-bold text-gold">${currentPrice}</span>
                 {owned && (
                   <span className="ml-2 text-muted-foreground">
                     (Own {owned.shares} share{owned.shares > 1 ? 's' : ''})
@@ -139,14 +140,14 @@ export default function TurnPanel({
                       : 'bg-muted text-muted-foreground cursor-not-allowed'
                   }`}
                 >
-                  Buy ${stockDef.price}
+                  Buy ${currentPrice}
                 </button>
                 {owned && (
                   <button
                     onClick={() => { onSellStock(stockDef.id); setTraded(true); }}
                     className="flex-1 py-3 bg-destructive text-destructive-foreground font-bold rounded-lg active:scale-[0.98]"
                   >
-                    Sell 1 Share
+                    Sell ${Math.round(currentPrice * 0.9)}
                   </button>
                 )}
                 <button
@@ -190,7 +191,7 @@ export default function TurnPanel({
               >
                 {player.stocks.map(s => {
                   const def = stocks.find(sd => sd.id === s.stockId)!;
-                  const currentValue = state.stockValues[s.stockId] || 0;
+                  const currentValue = Math.round(state.stockValues[s.stockId] || 0);
                   return (
                     <option key={s.stockId} value={s.stockId}>
                       {def.name} (Own {s.shares}) - ${currentValue}
@@ -218,7 +219,7 @@ export default function TurnPanel({
                 }}
                 className="flex-1 py-3 bg-destructive text-destructive-foreground font-bold rounded-lg active:scale-[0.98]"
               >
-                Sell 1 Share
+                Sell ${Math.round((Math.round(state.stockValues[selectedStockId] || 0)) * 0.9)}
               </button>
 
               <button
@@ -248,9 +249,9 @@ export default function TurnPanel({
                   <span className="text-muted-foreground ml-1">(🎲{r.roll})</span>
                 </div>
                 <div className={`font-bold ${r.totalChange >= 0 ? 'text-emerald-gain' : 'text-crimson-loss'}`}>
-                  {r.totalChange >= 0 ? '+' : ''}{r.totalChange.toFixed(1)}%
+                  {r.totalChange >= 0 ? '+' : ''}{Math.round(r.totalChange)}%
                   <span className="text-muted-foreground font-normal ml-1">
-                    ${r.oldValue}→${r.newValue}
+                    ${Math.round(r.oldValue)}→${Math.round(r.newValue)}
                   </span>
                 </div>
               </div>

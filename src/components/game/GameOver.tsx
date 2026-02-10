@@ -30,12 +30,12 @@ export default function GameOver({ players, getPlayerNetWorth, onRestart }: Game
               <div className="text-left">
                 <div className="font-bold">{p.name} {p.nationality.flag}</div>
                 <div className="text-xs text-muted-foreground">
-                  Cash: ${p.cash.toLocaleString()} • Stocks: {p.stocks.length}
+                  Cash: ${Math.round(p.cash).toLocaleString()} • Stocks: {p.stocks.length}
                 </div>
               </div>
             </div>
             <span className="font-display text-xl font-bold text-gold">
-              ${p.netWorth.toLocaleString()}
+              ${Math.round(p.netWorth).toLocaleString()}
             </span>
           </div>
         ))}

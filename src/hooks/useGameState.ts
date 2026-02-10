@@ -246,7 +246,7 @@ export function useGameState() {
       const idx = prev.currentPlayerIndex;
       const player = { ...prev.players[idx] };
       
-      const buyPrice = prev.stockValues[stockId] || stockDef.price;
+      const buyPrice = Math.round(prev.stockValues[stockId] || stockDef.price);
       
       if (player.cash < buyPrice) return prev;
 
