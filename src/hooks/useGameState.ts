@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { GameState, Player, Nationality, StockDefinition, EventCard, ChanceCard, BoardTile, GamePhase, StockRollResult, PlayerStock, StockCategory } from '@/types/game';
+import type { GameState, Player, Nationality, StockDefinition, EventCard, ChanceCard, BoardTile, GamePhase, StockRollResult, PlayerStock, StockCategory, DividendResult } from '@/types/game';
 import stocksData from '@/data/stocks.json';
 import eventsData from '@/data/events.json';
 import chancesData from '@/data/chances.json';
@@ -47,6 +47,7 @@ export function useGameState() {
     currentChance: null,
     currentTile: null,
     stockRollResults: [],
+    dividendResults: [],
     stockValues: {},
     gameLog: [],
     phaseBeforeStockAction: null,
@@ -86,6 +87,7 @@ export function useGameState() {
       currentChance: null,
       currentTile: null,
       stockRollResults: [],
+      dividendResults: [],
       stockValues,
       gameLog: [`Game started! Year ${START_YEAR}. ${players[0].name}'s turn.`],
       phaseBeforeStockAction: null,
@@ -330,6 +332,53 @@ export function useGameState() {
     });
   }, []);
 
+  const calculateDividends = (results: StockRollResult[], prevState: GameState): { dividendResults: DividendResult[]; updatedPlayers: Player[] } => {
+    const dividendResults: DividendResult[] = [];
+    const updatedPlayers = prevState.players.map(player => ({ ...player, cash: player.cash }));
+
+    results.forEach(result => {
+      const stockDef = getStockById(result.stockId)!;
+      const valueChange = result.newValue - result.oldValue;
+      
+      // Only pay dividends if stock value increased
+      if (valueChange <= 0) return;
+
+      const recipients: Array<{ playerId: number; playerName: string; dividendAmount: number }> = [];
+
+      // Check each player to see if they have the matching nationality bonus
+      updatedPlayers.forEach((player, idx) => {
+        // Only pay dividend to players whose nationality bonus matches this stock's category
+        if (player.nationality.bonus.category === stockDef.category) {
+          const playerStock = prevState.players[idx].stocks.find(s => s.stockId === result.stockId);
+          if (playerStock && playerStock.shares > 0) {
+            // Calculate dividend: value increase per share * number of shares
+            const dividendAmount = Math.round(valueChange * playerStock.shares);
+            recipients.push({
+              playerId: player.id,
+              playerName: player.name,
+              dividendAmount,
+            });
+            // Add cash to player
+            player.cash += dividendAmount;
+          }
+        }
+      });
+
+      // Only add to dividendResults if someone received dividends
+      if (recipients.length > 0) {
+        dividendResults.push({
+          stockId: result.stockId,
+          stockName: stockDef.name,
+          category: stockDef.category,
+          valueChange,
+          recipients,
+        });
+      }
+    });
+
+    return { dividendResults, updatedPlayers };
+  };
+
   const rollStockValuation = useCallback(() => {
     setState(prev => {
       // Only the last player can trigger valuation
@@ -378,35 +427,28 @@ export function useGameState() {
         updatedStockValues[result.stockId] = result.newValue;
       });
 
-      // Calculate and apply dividends to all players
-      const updatedPlayers = prev.players.map(player => {
-        let dividendCash = 0;
-        
-        player.stocks.forEach(ps => {
-          const stockDef = getStockById(ps.stockId)!;
-          const result = results.find(r => r.stockId === ps.stockId);
-          if (!result) return;
+      // Calculate dividends based on nationality bonuses
+      const { dividendResults, updatedPlayers } = calculateDividends(results, prev);
 
-          // Dividend = shares * old value * (change % / 100)
-          const valueChange = result.newValue - result.oldValue;
-          const dividend = Math.round(ps.shares * valueChange);
-          dividendCash += dividend;
-
-          // Apply nationality bonus as additional dividend
-          if (stockDef.category === player.nationality.bonus.category && result.percentChange > 0) {
-            const bonusAmount = Math.round(ps.shares * result.oldValue * (player.nationality.bonus.percentage / 100));
-            dividendCash += bonusAmount;
-          }
-        });
-
-        return { ...player, cash: player.cash + dividendCash };
-      });
+      // If there are dividends to display, show the dividend phase, otherwise skip to valuation results
+      if (dividendResults.length > 0) {
+        return {
+          ...prev,
+          players: updatedPlayers,
+          stockValues: updatedStockValues,
+          stockRollResults: results,
+          dividendResults,
+          phase: 'dividend_display',
+          gameLog: [`Stock valuation complete. Dividends being distributed...`, ...prev.gameLog].slice(0, 50),
+        };
+      }
 
       return {
         ...prev,
         players: updatedPlayers,
         stockValues: updatedStockValues,
         stockRollResults: results,
+        dividendResults: [],
         phase: 'valuation_results',
       };
     });
@@ -487,29 +529,21 @@ export function useGameState() {
             updatedStockValues[result.stockId] = result.newValue;
           });
 
-          // Calculate and apply dividends to all players
-          const updatedPlayers = prev.players.map(player => {
-            let dividendCash = 0;
-            
-            player.stocks.forEach(ps => {
-              const stockDef = getStockById(ps.stockId)!;
-              const result = results.find(r => r.stockId === ps.stockId);
-              if (!result) return;
+          // Calculate dividends based on nationality bonuses
+          const { dividendResults, updatedPlayers } = calculateDividends(results, prev);
 
-              // Dividend = shares * old value * (change % / 100)
-              const valueChange = result.newValue - result.oldValue;
-              const dividend = Math.round(ps.shares * valueChange);
-              dividendCash += dividend;
-
-              // Apply nationality bonus as additional dividend
-              if (stockDef.category === player.nationality.bonus.category && result.percentChange > 0) {
-                const bonusAmount = Math.round(ps.shares * result.oldValue * (player.nationality.bonus.percentage / 100));
-                dividendCash += bonusAmount;
-              }
-            });
-
-            return { ...player, cash: player.cash + dividendCash };
-          });
+          // If there are dividends to display, show the dividend phase, otherwise skip to valuation results
+          if (dividendResults.length > 0) {
+            return {
+              ...prev,
+              players: updatedPlayers,
+              stockValues: updatedStockValues,
+              stockRollResults: results,
+              dividendResults,
+              phase: 'dividend_display',
+              gameLog: [`Stock valuation complete. Dividends being distributed...`, ...prev.gameLog].slice(0, 50),
+            };
+          }
 
           // Return to valuation_results phase with calculated dividends
           return {
@@ -517,6 +551,7 @@ export function useGameState() {
             players: updatedPlayers,
             stockValues: updatedStockValues,
             stockRollResults: results,
+            dividendResults: [],
             phase: 'valuation_results',
             gameLog: [`Stock valuation round complete.`, ...prev.gameLog].slice(0, 50),
           };
@@ -554,6 +589,14 @@ export function useGameState() {
     });
   }, []);
 
+  const acknowledgeDividends = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      phase: 'valuation_results',
+      dividendResults: [],
+    }));
+  }, []);
+
   const openStockAction = useCallback((stockId?: string) => {
     setState(prev => ({
       ...prev,
@@ -587,6 +630,7 @@ export function useGameState() {
     skipStockAction,
     rollStockValuation,
     endTurn,
+    acknowledgeDividends,
     openStockAction,
     getPlayerNetWorth,
   };

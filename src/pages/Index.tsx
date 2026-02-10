@@ -10,7 +10,7 @@ const Index = () => {
     state, currentPlayer, stocks, board,
     startGame, rollMovementDice, resolveLanding,
     applyEvent, applyChance, buyStock, sellStock,
-    skipStockAction, rollStockValuation, endTurn,
+    skipStockAction, rollStockValuation, endTurn, acknowledgeDividends,
     openStockAction,
     getPlayerNetWorth,
   } = useGameState();
@@ -66,6 +66,7 @@ const Index = () => {
             onSellStock={sellStock}
             onSkipStock={skipStockAction}
             onRollValuation={rollStockValuation}
+            onAcknowledgeDividends={acknowledgeDividends}
             onEndTurn={endTurn}
           />
         </div>

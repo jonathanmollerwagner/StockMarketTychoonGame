@@ -12,12 +12,13 @@ interface TurnPanelProps {
   onSellStock: (stockId: string) => void;
   onSkipStock: () => void;
   onRollValuation: () => void;
+  onAcknowledgeDividends: () => void;
   onEndTurn: () => void;
 }
 
 export default function TurnPanel({
   state, stocks, onRollDice, onResolveLanding, onApplyEvent, onApplyChance,
-  onBuyStock, onSellStock, onSkipStock, onRollValuation, onEndTurn,
+  onBuyStock, onSellStock, onSkipStock, onRollValuation, onAcknowledgeDividends, onEndTurn,
 }: TurnPanelProps) {
   const player = state.players[state.currentPlayerIndex];
   if (!player) return null;
@@ -262,6 +263,54 @@ export default function TurnPanel({
             className="w-full mt-3 py-3 bg-primary text-primary-foreground font-bold rounded-lg active:scale-[0.98]"
           >
             End Turn
+          </button>
+        </div>
+      )}
+
+      {/* Dividend display */}
+      {state.phase === 'dividend_display' && (
+        <div>
+          <div className="text-center mb-3">
+            <span className="text-3xl">💰</span>
+            <h3 className="font-display text-lg font-bold text-gold">Dividend Distribution</h3>
+            <p className="text-xs text-muted-foreground">Companies paying gains to shareholders with strategic interests</p>
+          </div>
+          
+          {state.dividendResults.length === 0 ? (
+            <p className="text-sm text-center text-muted-foreground">No dividends to distribute.</p>
+          ) : (
+            <div className="space-y-3">
+              {state.dividendResults.map(dividend => (
+                <div key={dividend.stockId} className="border border-border rounded-lg p-3 bg-background/50">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`badge-${dividend.category} px-2 py-0.5 rounded text-xs font-bold`}>
+                      {dividend.category.toUpperCase()}
+                    </span>
+                    <span className="font-bold text-emerald-gain">
+                      +${dividend.valueChange}/share
+                    </span>
+                  </div>
+                  <h4 className="font-bold text-sm mb-2">{dividend.stockName}</h4>
+                  <div className="space-y-1">
+                    {dividend.recipients.map(recipient => (
+                      <div key={recipient.playerId} className="text-sm flex items-center justify-between">
+                        <span className="text-foreground">{recipient.playerName}</span>
+                        <span className="font-bold text-emerald-gain">
+                          +${recipient.dividendAmount}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          <button
+            onClick={onAcknowledgeDividends}
+            className="w-full mt-3 py-3 bg-primary text-primary-foreground font-bold rounded-lg active:scale-[0.98]"
+          >
+            Acknowledge Dividends
           </button>
         </div>
       )}

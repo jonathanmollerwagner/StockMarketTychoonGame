@@ -66,6 +66,7 @@ export type GamePhase =
   | 'stock_action'
   | 'stock_valuation'
   | 'valuation_results'
+  | 'dividend_display'
   | 'turn_end'
   | 'game_over';
 
@@ -80,6 +81,18 @@ export interface StockRollResult {
   newValue: number;
 }
 
+export interface DividendResult {
+  stockId: string;
+  stockName: string;
+  category: StockCategory;
+  valueChange: number;
+  recipients: Array<{
+    playerId: number;
+    playerName: string;
+    dividendAmount: number;
+  }>;
+}
+
 export interface GameState {
   players: Player[];
   currentPlayerIndex: number;
@@ -90,6 +103,7 @@ export interface GameState {
   currentChance: ChanceCard | null;
   currentTile: BoardTile | null;
   stockRollResults: StockRollResult[];
+  dividendResults: DividendResult[];
   stockValues: { [stockId: string]: number }; // global stock values
   gameLog: string[];
   phaseBeforeStockAction: GamePhase | null;
