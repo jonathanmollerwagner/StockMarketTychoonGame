@@ -21,8 +21,9 @@ function getTilePosition(index: number, boardSize: number): { row: number; col: 
 
 function getTileLabel(tile: BoardTile, stocks: StockDefinition[]): { label: string; icon: string; category?: string } {
   if (tile.type === 'start') return { label: 'START', icon: '🏁' };
+  if (tile.type === 'event') return { label: 'EVENT', icon: '📰' };
   if (tile.type === 'chance') return { label: 'CHANCE', icon: '🎲' };
-  if (tile.type === 'blank') return { label: '', icon: '—' };
+  if (tile.type === 'blank') return { label: '', icon: '🅿️' };
   if (tile.type === 'stock' && tile.stockId) {
     const stock = stocks.find(s => s.id === tile.stockId);
     if (stock) return { label: stock.name, icon: getCategoryIcon(stock.category), category: stock.category };
