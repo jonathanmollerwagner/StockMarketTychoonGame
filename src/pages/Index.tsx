@@ -1,4 +1,5 @@
 import { useGameState } from '@/hooks/useGameState';
+import { useEffect, useState } from 'react';
 import PlayerSetup from '@/components/game/PlayerSetup';
 import GameBoard from '@/components/game/GameBoard';
 import GameHUD from '@/components/game/GameHUD';
@@ -14,6 +15,15 @@ const Index = () => {
     openStockAction,
     getPlayerNetWorth,
   } = useGameState();
+
+  const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
+
+  // Auto-select the current player at the beginning of their turn
+  useEffect(() => {
+    if (currentPlayer) {
+      setSelectedPlayerId(currentPlayer.id);
+    }
+  }, [state.currentPlayerIndex, currentPlayer]);
 
   if (state.phase === 'setup') {
     return <PlayerSetup onStartGame={startGame} />;
@@ -41,6 +51,8 @@ const Index = () => {
           stocks={stocks}
           stockValues={state.stockValues}
           onRequestStockAction={openStockAction}
+          selectedPlayerId={selectedPlayerId}
+          onSelectPlayer={setSelectedPlayerId}
         />
       </div>
 
