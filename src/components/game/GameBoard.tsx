@@ -20,7 +20,7 @@ function getTilePosition(index: number, boardSize: number): { row: number; col: 
 }
 
 function getTileLabel(tile: BoardTile, stocks: StockDefinition[]): { label: string; icon: string; category?: string } {
-  if (tile.type === 'event') return { label: 'EVENT', icon: '📰' };
+  if (tile.type === 'start') return { label: 'START', icon: '🏁' };
   if (tile.type === 'chance') return { label: 'CHANCE', icon: '🎲' };
   if (tile.type === 'blank') return { label: '', icon: '—' };
   if (tile.type === 'stock' && tile.stockId) {
@@ -41,6 +41,7 @@ function getCategoryIcon(cat: string): string {
 }
 
 function getTileBgClass(tile: BoardTile, stocks: StockDefinition[]): string {
+  if (tile.type === 'start') return 'bg-[hsl(var(--tile-start))]';
   if (tile.type === 'event') return 'bg-[hsl(var(--tile-event))]';
   if (tile.type === 'chance') return 'bg-[hsl(var(--tile-chance))]';
   if (tile.type === 'blank') return 'bg-[hsl(var(--tile-blank))]';

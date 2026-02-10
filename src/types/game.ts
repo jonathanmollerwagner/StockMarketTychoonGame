@@ -53,7 +53,7 @@ export interface ChanceCard {
 }
 
 export interface BoardTile {
-  type: 'stock' | 'event' | 'chance' | 'blank';
+  type: 'start' | 'stock' | 'event' | 'chance' | 'blank';
   stockId?: string;
 }
 

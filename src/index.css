@@ -54,6 +54,7 @@
     --consumption: 140 50% 45%;
 
     /* Tile type colors */
+    --tile-start: 42 80% 55%;
     --tile-event: 270 40% 45%;
     --tile-chance: 30 80% 50%;
     --tile-blank: 220 15% 22%;

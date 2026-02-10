@@ -1,6 +1,6 @@
 [
+  { "type": "start" },
   { "type": "stock", "stockId": "standard_oil" },
-  { "type": "blank" },
   { "type": "chance" },
   { "type": "stock", "stockId": "steel_works" },
   { "type": "blank" },
